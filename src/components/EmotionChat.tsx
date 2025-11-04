@@ -42,18 +42,34 @@ export default function EmotionChat({ onEmotionDetected }: EmotionChatProps) {
     setInputText('');
     setIsProcessing(true);
 
-    // Simulate GPT API response (placeholder for actual GPT integration)
-    setTimeout(() => {
+    try {
+      // Use Puter AI with GPT-5-nano model
+      const prompt = `The user is feeling ${userEmotion}. Their message: "${inputText}". Please respond empathetically and appropriately to their emotional state.`;
+      
+      // @ts-ignore - puter is loaded from CDN
+      const response = await window.puter.ai.chat(prompt, { model: "gpt-5-nano" });
+      
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: `I understand you're feeling ${userEmotion}. [GPT API Response Here]`,
+        text: response,
         emotion: 'neutral',
         isUser: false,
         timestamp: Date.now(),
       };
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        text: 'Sorry, I had trouble processing your message. Please try again.',
+        emotion: 'neutral',
+        isUser: false,
+        timestamp: Date.now(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsProcessing(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -151,8 +167,7 @@ export default function EmotionChat({ onEmotionDetected }: EmotionChatProps) {
         </div>
         <div className="mt-4 p-3 bg-muted rounded-lg">
           <p className="text-xs text-muted-foreground">
-            <strong>GPT API Integration:</strong> Add your GPT API key and endpoint in the code to enable AI responses.
-            Current implementation shows placeholder responses.
+            <strong>Powered by Puter AI (GPT-5-nano):</strong> Your messages are analyzed for emotional context and responded to with empathy.
           </p>
         </div>
       </div>
